@@ -5,8 +5,7 @@
  */
 package com.skyscala.generic.lab0;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -37,10 +36,9 @@ public class ObjectMap2 {
     
     public static Map<String,Object> generate(Map<String,String> data){
     
-        Map<String,Object> map= new TreeMap<>();
+        Map<String,Object> map= new TreeMap<>();        
         
-        
-        for(String k:data.keySet()){            
+        data.keySet().forEach((k) -> {            
             if(k.contains(".")){
                 mergeMap(createTree(k,data.get(k)),map);
             }else{
@@ -48,62 +46,45 @@ public class ObjectMap2 {
                 m.put(k, data.get(k));
                 mergeMap(m,map);
             }
-        }
+        });
         
         return map;
     }
     
-    public static void mergeMap(Map src,Map dest){
+    /**
+     * 
+     * @param src Source Map
+     * @param des Destination Map
+     */
+    public static void mergeMap(Map src,Map des){
         
-        for(Object k:src.keySet()){
+        src.keySet().forEach((k) -> {
             Object srcV=src.get(k);
-            Object desV=dest.get(k);
+            Object desV=des.get(k);
             if(desV!=null){
                 if((srcV instanceof Map) && (desV instanceof Map)){
                     mergeMap((Map)srcV,(Map)desV);
                 }
             }else{
-                dest.put(k, srcV);
+                des.put(k, srcV);
             }
-        }
+        });
     
     }
     
-    
-    public static Map<String,Object> createTree(String str,Object data){
+    /**
+     * 
+     * @param path
+     * @param data
+     * @return 
+     */
+    public static Map<String,Object> createTree(String path,Object data){
         Map<String,Object> map=new TreeMap<>();
-        if(str.contains(".")){
-            String[] arr=str.split("\\.");
-//            if(arr.length==1){                
-//                Map newMap=new TreeMap();
-//                newMap.put(arr[0], data);
-//                return newMap;
-//            }else{
-//                String first=arr[0];
-//                Object val=map.get(first);
-//                if(val==null){
-//                    val=new TreeMap();
-//                    map.put(first, val);
-//                }
-//                if(arr.length>1){
-//                    ((Map)val).put(arr[1],createTree(str.replaceFirst(arr[0]+"."+arr[1]+".", ""),data));
-//                }
-//            }
-
-            
-//                String first=arr[0];
-//                Object val=map.get(first);
-//                if(val==null){
-//                    //val=new TreeMap();
-//                    map.put(arr[0], createTree(str.replaceFirst(arr[0]+".", ""), data));
-//                }
-                map.put(arr[0], createTree(str.replaceFirst(arr[0]+".", ""), data));
-                //((Map)val).put(arr[1],createTree(str.replaceFirst(arr[0]+".", ""), data));
-                //((Map)val).put(arr[1],createTree(str.replaceFirst(arr[0]+"."+arr[1]+".", ""),data));
-                
-            
+        if(path.contains(".")){
+            String[] arr=path.split("\\.");
+            map.put(arr[0], createTree(path.replaceFirst(arr[0]+".", ""), data));            
         }else{
-            map.put(str, data);
+            map.put(path, data);
         }
         return map;
     }
