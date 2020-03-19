@@ -1,0 +1,1 @@
+rootFolder/file2.txt
