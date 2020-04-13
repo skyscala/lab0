@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Messages</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+
+            var rndMsgId = (Math.ceil(Math.random() * 1000));
+            
+            var _url="http://localhost:9090/messages/retrieve_by/"+rndMsgId;
+            var _id="PING";
+            
+            /*
+            var evtSource=new EventSource(_url, {withCredentials: false});
+            evtSource.onmessage = function(e) { 
+                console.log(JSON.parse(e.data));                
+                var msgConsole = document.getElementById("msg_console");
+                var msg=document.createElement('div');
+                msg.innerText=JSON.stringify(JSON.parse(e.data));
+                msgConsole.appendChild(msg);
+            };
+            */
+            
+            var evtSource=new EventSource(_url, {withCredentials: false});
+            evtSource.addEventListener(rndMsgId,function(e){
+                //console.log(JSON.parse(e.data));
+                //var msgConsole = document.getElementById("msg_console");
+                //var msg=document.createElement('div');
+                //msg.innerText=JSON.stringify(JSON.parse(e.data));
+                //msgConsole.appendChild(msg);
+                console.log(JSON.parse(e.data));                
+                var msgConsole = document.getElementById("msg_console");
+                var msg=document.createElement('div');
+                msg.innerText=JSON.stringify(JSON.parse(e.data));
+                msgConsole.appendChild(msg);
+                
+            });
+            
+            evtSource.onerror = function(err){
+                console.error("Error - ",err);
+                evtSource.close();
+            };
+            
+        </script>
+    </head>
+    <body>
+        <div id="msg_console"></div>        
+    </body>
+</html>

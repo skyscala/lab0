@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Messages</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     
+        <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+        
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
+       
+
+        <script>
+            
+            (function(){
+                
+                var rndMsgId="monitoring";
+                var _url="/messages/retrieve_by/"+rndMsgId;
+                
+                var evtSource=new EventSource(_url, {withCredentials: false});
+                evtSource.addEventListener(rndMsgId,function(e){                    
+                    
+                    if(e && e.data){
+        
+                        var data=JSON.parse(e.data);
+                        if(!data["ping"]){
+                            var table=$('<table>');
+                            var tbody=$('<tbody>');                                                        
+                            table.append(tbody);
+                            
+                            
+                            var msgId=data["msgId"];
+                            
+                            
+                            
+                            if(msgId){
+                                
+                                var req=data["request"];
+                                if(typeof req === "object"){
+                                    req=JSON.stringify(req);
+                                }
+                                
+                                var res=data["response"];                                
+                                if(typeof res === "object"){
+                                    res=JSON.stringify(res);
+                                }
+                                
+                                console.log(msgId);
+                                console.log(req);
+                                console.log(res);
+                                tbody.append(createRow("Message Id",msgId));
+                                tbody.append(createRow("Request",req));
+                                tbody.append(createRow("Response",res));
+                                //var msgConsole = document.getElementById("msgConsole");
+                                //msgConsole.appendChild(table);
+                                $("#messageConsole").prepend($("<hr>"));
+                                $("#messageConsole").prepend(table);
+                                
+                            }
+                            
+                        }
+                        
+                    }
+
+                });
+
+                evtSource.onerror = function(err){
+                    console.error("Error - ",err);
+                    evtSource.close();
+                };
+            }());
+            
+            function createRow(key,val){
+                var row = $('<tr>');
+                var td1 = $('<td>');
+                td1.append(key);
+                row.append(td1);  
+                var td2 = $('<td>');
+                td2.append(":");
+                row.append(td2);
+                var td3 = $('<td>');
+                td3.append($('<strong>').append(val));
+                row.append(td3);
+                return row;
+                
+            }
+            
+            
+            
+        </script>
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+                <span class="navbar-brand">Messages</span>                
+            </nav>
+            
+        </header>
+        <main>
+            
+            <div style="padding: 50px">
+                <div class="row">
+                    <br/>
+                </div>                
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12 col-md-12">     
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div id="messageConsole" class="col-lg-12 col-md-12 col-sm-12">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>

@@ -1,0 +1,19 @@
+server:
+  port: 9090
+
+spring:  
+  webflux:
+    static-path-pattern: "/web/**"
+  resources:
+    static-locations:
+      - "classpath:/static/"
+  data:
+    mongodb:                        
+      database: rtmessage
+      uri: mongodb://localhost:27000/rtmessage
+      
+      
+
+      
+      
+ 
