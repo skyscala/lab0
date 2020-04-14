@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Message Details</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        <link rel="stylesheet" type="text/css" href="stylesheets/datatables.min.css"/> 
+        <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css"/>
+        
+
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/datatables.min.js"></script>
+        
+        <script>
+            
+            $(document).ready(function () {
+                
+                var hash=window.location.href.split("#")[1];
+                //alert(hash);
+                
+                
+                if(hash){
+                    $.ajax({
+                        url:"/message/get/"+hash,
+                        type: "GET",                    
+                        contentType: 'application/json',
+                        cache: false,
+                        processData: false,
+                        success: function(data){                        
+
+                            console.log(data);                
+                            if (data&&data['attrs']) {
+                                var keys1=["attr1","attr2","attr3"];
+                                var header1=["Start Date","End Date","Status"];
+                                var keys2=["attr1_res","attr2_res","attr3_res"];  
+                                var header2=["Fist Name","Last Name","Address"];
+                                var req=data['attrs']['request'];
+                                var res=data['attrs']['response'];
+
+                                loadTable($('requestTable'),keys1,header1,req);
+                                loadTable($('requestTable'),keys2,header2,res);
+                            }
+                        },
+                        error: function(xhr,status,error){
+                            console.log(error);
+                        },
+                        complete: function(){
+
+                        }
+                    });
+                }
+                
+            });
+            
+            
+            function loadTable(table,keys,header,items){
+                
+               
+                var thead=$('<thead>');
+                var tr=$('<tr>');
+                for(var i=0;i<keys.length;i++){
+                   tr.append($('<th>').append(header[keys[i]]));
+                }
+                thead.append(tr);
+                table.append(thead);
+               
+                var tbody=$('<tbody>');
+                for(var j=0;j<items.length;j++){
+                    var tr2=$('<tr>');
+                    var item=items[j];
+                    for(var k=0;k<keys.length;i){
+                        tr2.append($('<td>').append(item[keys[k]]));
+                    }
+                    tbody.append(tr2);
+                }
+                table.append(tbody);
+                
+                table.DataTable({
+                    dom: '<"row"<"col"<"float-right"l><"float-left"p>>><"row"<"col"t>><"row"<"col"<"float-left"p><"float-right"i>>>',
+                    "paging": false,
+                    "ordering": false,
+                    "info": false
+
+                });
+            }
+            
+        </script>
+        
+        <style>
+            body{
+                font-size: 11px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+                <span class="navbar-brand">Message</span>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+
+                        </li>                        
+                    </ul>
+                    <button class="btn btn-outline-danger my-2 my-sm-0" data-toggle="modal" data-target="#queryModal">Search</button>
+                </div>
+            </nav>
+        </header>
+        <main>            
+            <div style="padding: 50px">
+                <div class="row">
+                    <br/>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12 col-md-12"> 
+                        <h3>Request</h3>
+                        <table id="requestTable" class="table table-bordered" style="width:100%">
+
+                            
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <br/>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12 col-md-12">   
+                        <h3>Response</h3>
+                        <table id="responseTable" class="table table-bordered" style="width:100%">
+
+                            
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+    
+</html>

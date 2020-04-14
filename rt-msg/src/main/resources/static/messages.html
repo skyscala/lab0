@@ -1,50 +1,301 @@
 <!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
 <html>
     <head>
-        <title>Messages</title>
+        <title>Monitoring</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script>
+     
+        <link rel="stylesheet" type="text/css" href="stylesheets/datatables.min.css"/> 
+        <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css"/>
+        
 
-            var rndMsgId = (Math.ceil(Math.random() * 1000));
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/datatables.min.js"></script>
+        
+        <style>
+            body{
+                font-size: 11px;
+            }
+        </style>
+
+        <script>
             
-            var _url="http://localhost:9090/messages/retrieve_by/"+rndMsgId;
-            var _id="PING";
-            
-            /*
-            var evtSource=new EventSource(_url, {withCredentials: false});
-            evtSource.onmessage = function(e) { 
-                console.log(JSON.parse(e.data));                
-                var msgConsole = document.getElementById("msg_console");
-                var msg=document.createElement('div');
-                msg.innerText=JSON.stringify(JSON.parse(e.data));
-                msgConsole.appendChild(msg);
-            };
-            */
-            
-            var evtSource=new EventSource(_url, {withCredentials: false});
-            evtSource.addEventListener(rndMsgId,function(e){
-                //console.log(JSON.parse(e.data));
-                //var msgConsole = document.getElementById("msg_console");
-                //var msg=document.createElement('div');
-                //msg.innerText=JSON.stringify(JSON.parse(e.data));
-                //msgConsole.appendChild(msg);
-                console.log(JSON.parse(e.data));                
-                var msgConsole = document.getElementById("msg_console");
-                var msg=document.createElement('div');
-                msg.innerText=JSON.stringify(JSON.parse(e.data));
-                msgConsole.appendChild(msg);
+            function showDetails(){
+                $("#msgListingArea").hide();
+                $("#msgDetailsArea").show();
                 
+                
+            }
+            function hideDetails(){
+                $("#msgDetailsArea").hide();
+                $("#msgListingArea").show();
+            }
+            
+            $(document).ready(function () {
+                hideDetails();
             });
             
-            evtSource.onerror = function(err){
-                console.error("Error - ",err);
-                evtSource.close();
-            };
+            (function(){
+                
+                
+                
+                var rndMsgId="monitoring";
+                var _url="/messages/retrieve_by/"+rndMsgId;
+                
+                var evtSource=new EventSource(_url, {withCredentials: false});
+                evtSource.addEventListener(rndMsgId,function(e){                    
+                    
+                    if(e && e.data){
+        
+                        var data=JSON.parse(e.data);
+                        if(!data["ping"]){
+                            var table=$('<table>');
+                            var tbody=$('<tbody>');                                                        
+                            table.append(tbody);
+                            
+                            
+                            var msgId=data["msgId"];
+                            
+                            
+                            
+                            if(msgId){
+                                
+                                /*
+                                var req=data["request"];
+                                if(typeof req === "object"){
+                                    req=JSON.stringify(req);
+                                }
+                                
+                                var res=data["response"];                                
+                                if(typeof res === "object"){
+                                    res=JSON.stringify(res);
+                                }
+                                
+                                
+                                console.log(req);
+                                console.log(res);
+                                */
+                                console.log(msgId);
+                                tbody.append(createRow("Message Id",msgId,data));
+                                //tbody.append(createRow("Request",req));
+                                //tbody.append(createRow("Response",res));
+                                //var msgConsole = document.getElementById("msgConsole");
+                                //msgConsole.appendChild(table);
+                                $("#messageConsole").prepend($("<hr>"));
+                                
+                                //$("#message")
+                                
+                                $("#messageConsole").prepend(table);
+                                
+                            }
+                            
+                        }
+                        
+                    }
+
+                });
+
+                evtSource.onerror = function(err){
+                    console.error("Error - ",err);
+                    evtSource.close();
+                };
+            }());
+            
+            function createRow(key,val,payload){
+                var row = $('<tr>');
+                var td1 = $('<td>');
+                td1.attr('valign','top');
+                td1.append($('<strong>').append(key));
+                row.append(td1);  
+                var td2 = $('<td>');
+                td2.attr('valign','top');
+                td2.append($('<strong>').append(":"));
+                row.append(td2);
+                var td3 = $('<td>');
+                td3.attr('valign','top');
+                var a=$('<a>');
+                a.append(val);
+                a.attr('href','#');                                
+                td3.append(a);
+                row.append(td3);
+                
+                
+                a.click(function(){
+                    showDetails();
+                    if (payload) {
+                        var keys1=["attr1","attr2","attr3"];
+                        var header1=["Start Date","End Date","Status"];
+                        var keys2=["attr1_res","attr2_res","attr3_res"];  
+                        var header2=["Fist Name","Last Name","Address"];
+                        var req=payload['request'];
+                        var res=payload['response'];
+                        
+                        var reqTableDiv=$('#requestTableDiv');
+                        reqTableDiv.empty();
+                        var reqTable=$('<table>'); 
+                        loadReqTable(reqTable,keys1,header1,req);
+                        reqTableDiv.append(reqTable);
+                        var resTableDiv=$('#responseTableDiv');
+                        resTableDiv.empty();
+                        var resTable=$('<table>'); 
+                        loadResTable(resTable,keys2,header2,res);
+                        resTableDiv.append(resTable);
+                    }
+                });
+                
+                
+                
+                return row;
+                
+            }
+            
+            function loadReqTable(table,keys,header,item){
+                table.attr('class','table table-bordered');    
+                table.attr('width','100%');   
+                               
+                var thead=$('<thead>');
+                var tr=$('<tr>');
+                console.log('keys.length:'+keys.length);
+                console.log('item:'+item);
+                for(var i=0;i<keys.length;i++){
+                   console.log(header[i]);
+                   tr.append($('<th>').append(header[i]));
+                }
+                thead.append(tr);
+                table.append(thead);
+               
+                var tbody=$('<tbody>');                
+                var tr2=$('<tr>');
+                for(var k=0;k<keys.length;k++){
+                    console.log(item[keys[k]+""]);
+                    tr2.append($('<td>').append(item[keys[k]+""]));
+                }
+                tbody.append(tr2);                
+                table.append(tbody);
+                
+                table.DataTable({
+                    dom: '<"row"<"col"<"float-right"l><"float-left"p>>><"row"<"col"t>><"row"<"col"<"float-left"p><"float-right"i>>>',
+                    "paging": false,
+                    "ordering": false,
+                    "info": false
+
+                });
+            }
+            
+            function loadResTable(table,keys,header,items){
+                
+                table.attr('class','table table-bordered');    
+                table.attr('width','100%');    
+                var thead=$('<thead>');
+                var tr=$('<tr>');
+                for(var i=0;i<keys.length;i++){
+                   tr.append($('<th>').append(header[i]));
+                }
+                thead.append(tr);
+                table.append(thead);
+               
+                var tbody=$('<tbody>');
+                for(var j=0;j<items.length;j++){
+                    var tr2=$('<tr>');
+                    var item=items[j];
+                    for(var k=0;k<keys.length;k++){
+                        tr2.append($('<td>').append(item[keys[k]]));
+                    }
+                    tbody.append(tr2);
+                }
+                table.append(tbody);
+                
+                table.DataTable({
+                    dom: '<"row"<"col"<"float-right"l><"float-left"p>>><"row"<"col"t>><"row"<"col"<"float-left"p><"float-right"i>>>',
+                    "paging": false,
+                    "ordering": false,
+                    "info": false
+
+                });
+            }
+            
+            
             
         </script>
     </head>
     <body>
-        <div id="msg_console"></div>        
+        <header>
+            <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+                <span class="navbar-brand">Messages</span>                
+            </nav>
+            
+        </header>
+        <main>
+            
+            <div style="padding: 50px" id="msgListingArea">
+                <div class="row">
+                    <br/>
+                </div> 
+                
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12 col-md-12">     
+                        <div class="card">
+                            <div class="card-header">
+                                <ul class="nav nav-tabs card-header-tabs">
+                                  <li class="nav-item">
+                                      <a class="nav-link active" href="#">API</a>
+                                  </li>                                       
+                                </ul>
+                              </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div id="messageConsole" class="col-lg-12 col-md-12 col-sm-12">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding: 50px" id="msgDetailsArea">
+                <div class="row">
+                    <br/>
+                    
+                    
+                    
+                </div>
+                
+                <div class="row">
+                    <h6>
+                    <a onclick="hideDetails()" href="#"> &Lt; Back to listings</a>
+                    </h6>
+                </div>
+                
+                <div class="row">
+                    <h3>Request</h3>
+                    <div class="col-lg-12 col-sm-12 col-md-12" id="requestTableDiv"> 
+                        
+                        <table id="requestTable" class="table table-bordered" style="width:100%">
+
+                            
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <br/>
+                </div>
+                <div class="row">
+                    <h3>Response</h3>
+                    <div class="col-lg-12 col-sm-12 col-md-12" id="responseTableDiv">   
+                        
+                        
+                    </div>
+                </div>
+            </div>
+        </main>
     </body>
 </html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Data Table</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+
+        <link rel="stylesheet" type="text/css" href="stylesheets/datatables.min.css"/> 
+        <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" type="text/css" href="jquery_ui/jquery-ui.min.css"/>
+
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/datatables.min.js"></script>
+        <script type="text/javascript" src="jquery_ui/jquery-ui.min.js"></script>
+
+        <script>
+
+            var dataTable = null;
+
+            function clearDataTable() {
+              console.log("clearing datatable..");
+              dataTable.clear().draw();
+            }
+
+            function initQueryForm() {
+              
+                for (var i = 1; i <= 12; i++) {
+                    addSearchInput("attr" + i, "Attribute " + i);
+                }
+
+                $("#attr1").datepicker(
+                    {
+                        changeMonth: true,
+                        changeYear: true
+                    }
+                );
+                $("#attr1").datepicker("option", "dateFormat", "yy-mm-dd");
+            }
+
+            function addSearchInput(labelId, labelName) {
+
+                var div = $('<div>');
+                div.attr("class", "col-lg-4 col-md-4 col-sm-4");
+                var label = $('<h6>');
+                label.attr("class", "control-label");
+                label.append(labelName);
+                var input = $("<input>");
+                input.attr("type", "text");
+                input.attr("class", "form-control");
+                input.attr("id", labelId);
+                input.attr("name", labelId);
+                input.attr("placeholder", labelName);
+                var br = $("<br>");
+
+                div.append(label);
+                div.append(input);
+                div.append(br);
+
+                $("#queryForm").append(div);
+            }
+
+            function showBusy() {
+                $("#progressComp").show();
+                $("#queryButton").hide();
+                $('#table').hide();
+            }
+
+            function hideBusy() {
+                $("#progressComp").hide();
+                $("#queryButton").show();
+                $('#table').show();
+            }
+
+            function showError() {
+                $("#errorComp").show();
+            }
+
+            function hideError() {
+                $("#errorComp").hide();
+            }
+
+            function submit() {
+                showBusy();    
+                var payload={};
+                
+
+              
+                $('#queryModal').modal('hide');
+                setTimeout(function () {
+                
+                    clearDataTable();
+                    $.ajax({
+                        url:"/query",
+                        type: "POST",
+                        data: payload,
+                        contentType: 'application/json',
+                        cache: false,
+                        processData: false,
+                        success: function(data){                        
+                            hideError();
+                            /*
+                                var arr = data;
+                                for (var i = 0; i < 100; i++) {
+                                  var idx = i + 1;
+                                  var item = {"attr1": "Test1 - " + idx, "attr2": "Test2 - " + idx};
+                                  arr[i] = item;
+                                }
+                            */                       
+                            if (data) {
+                              loadDataTable(data);
+                            }
+                        },
+                        error: function(xhr,status,error){
+                            showError();
+                        },
+                        complete: function(){
+                            hideBusy();
+                        }
+                    });
+
+                }, 3000);
+
+            }
+
+            /*
+            function loadDataTable(arr) {
+              if (arr.length > 0) {
+                $("#tbody").empty();
+                for (var i = 0; i < arr.length; i++) {
+                  var data = arr[i];
+                  var row = $('<tr>');
+                  var td1 = $('<td>');
+                  td1.append(data["attr1"]);
+                  row.append(td1);
+                  var td2 = $('<td>');
+                  td2.append(data["attr2"]);
+                  row.append(td2);
+                  $("#tbody").append(row);
+                }
+              }
+            }
+            */
+           
+            function loadDataTable(arr) {
+              if (arr.length > 0) {
+                $("#tbody").empty();
+                for (var i = 0; i < arr.length; i++) {
+                    var data = arr[i];
+                    var row = $('<tr>');
+                    var td1 = $('<td>');
+                    td1.append(data["attr1"]);
+                    row.append(td1);
+                    var td2 = $('<td>');
+                    td2.append(data["attr2"]);
+                    row.append(td2);
+                    $("#tbody").append(row);
+                }
+              }
+            }
+
+            $(document).ready(function () {
+                dataTable = $('#table').DataTable({
+                    dom: '<"row"<"col"<"float-right"l><"float-left"p>>><"row"<"col"t>><"row"<"col"<"float-left"p><"float-right"i>>>',
+                    "paging": false,
+                    "ordering": false,
+                    "info": false
+
+                });
+                initQueryForm();
+                hideBusy();
+                hideError();
+            });
+
+
+
+        </script>
+
+        <style>
+            body{
+                font-size: 11px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+                <span class="navbar-brand">Data Table</span>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+
+                        </li>                        
+                    </ul>
+                    <button class="btn btn-outline-danger my-2 my-sm-0" data-toggle="modal" data-target="#queryModal">Search</button>
+                </div>
+            </nav>
+        </header>
+        <main>
+            <div class="modal fade" id="queryModal" tabindex="-1" role="dialog" aria-labelledby="queryModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addMemberModalLabel">Query Form</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row" id="queryForm">
+
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-12 col-md-12 col-sm-12">
+                                    <button id="queryButton" class="btn btn-info fill" onclick="submit()" type="button">Submit</button>
+                                </div>                            
+                            </div>
+                        </div>            
+                    </div>
+                </div>
+            </div> 
+            <div style="padding: 50px">
+                <div class="row">
+                    <br/>
+                </div>
+                <div class="row">
+                    <div id="progressComp" class="col-lg-12 col-sm-12 col-md-12">   
+                        <p class="alert alert-info">
+                            <strong>Processing query request...</strong>
+                        </p>
+                    </div>
+                    <div id="errorComp" class="col-lg-12 col-sm-12 col-md-12">   
+                        <p class="alert alert-danger">
+                            <strong>Error occurred while processing request!</strong>
+                        </p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12 col-sm-12 col-md-12">        
+                        <table id="table" class="table table-bordered" style="width:100%">
+
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Position</th>                                    
+                                </tr>
+                            </thead>
+                            <tbody id="tbody">
+                                
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
